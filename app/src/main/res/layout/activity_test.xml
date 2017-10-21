@@ -6,11 +6,11 @@
     android:background="@android:color/white"
     android:orientation="vertical">
 
-    <com.github.mikephil.charting.charts.LineChart
+    <com.example.yanjiang.stockchart.mychart.MyLineChart
         android:id="@+id/line_chart"
         android:layout_width="match_parent"
         android:layout_height="200dp">
-    </com.github.mikephil.charting.charts.LineChart>
+    </com.example.yanjiang.stockchart.mychart.MyLineChart>
 
 
 </LinearLayout>

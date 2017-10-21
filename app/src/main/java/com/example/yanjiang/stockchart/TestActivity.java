@@ -4,15 +4,16 @@ import android.app.Activity;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.util.SparseArray;
 
 import com.example.yanjiang.stockchart.api.ConstantTest;
 import com.example.yanjiang.stockchart.bean.DataParse;
-import com.github.mikephil.charting.charts.LineChart;
+import com.example.yanjiang.stockchart.mychart.MyLineChart;
+import com.example.yanjiang.stockchart.mychart.MyXAxis;
 import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.LimitLine;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
-import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
@@ -34,14 +35,14 @@ import butterknife.ButterKnife;
 public class TestActivity extends Activity {
 
     @Bind(R.id.line_chart)
-    LineChart lineChart;
-    private XAxis xAxis;
+    MyLineChart lineChart;
+//    private XAxis xAxis;
     private YAxis axisLeft;
     private YAxis axisRight;
     private DataParse mData;
     private TestDataParse mData1;
-    private LineDataSet d1, d2;
-
+    private LineDataSet d1;
+    MyXAxis xAxisLine;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,10 +62,13 @@ public class TestActivity extends Activity {
         lineChart.setDescription("");
         Legend lineChartLegend = lineChart.getLegend();
         lineChartLegend.setEnabled(false);
-
         //x轴
-        xAxis = lineChart.getXAxis();
-        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xAxisLine = lineChart.getXAxis();
+        xAxisLine.setDrawLabels(true);
+        xAxisLine.setPosition(XAxis.XAxisPosition.BOTTOM);
+        //x轴
+//        xAxis = lineChart.getXAxis();
+//        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
 //        xAxis.setLabelsToSkip(59);
 
 
@@ -97,27 +101,43 @@ public class TestActivity extends Activity {
         this.axisRight.setDrawGridLines(false);
         this.axisRight.setDrawAxisLine(false);
         //背景线
-        this.xAxis.setGridColor(getResources().getColor(R.color.minute_zhoutv));
-        this.xAxis.setAxisLineColor(getResources().getColor(R.color.minute_zhoutv));
+        this.xAxisLine.setGridColor(getResources().getColor(R.color.minute_zhoutv));
+        this.xAxisLine.setAxisLineColor(getResources().getColor(R.color.minute_zhoutv));
         this.axisLeft.setGridColor(getResources().getColor(R.color.minute_zhoutv));
         this.axisRight.setAxisLineColor(getResources().getColor(R.color.minute_zhoutv));
 
     }
 
-    private void getOffLineData() {
 
+
+    private SparseArray<String> setXLabels() {
+        SparseArray<String> xLabels = new SparseArray<>();
+        xLabels.put(0, "09:30");
+        xLabels.put(185, "10:30");
+        xLabels.put(371, "11:30/13:00");
+        xLabels.put(556, "14:00");
+        xLabels.put(739, "15:00");
+        return xLabels;
+    }
+    private void getOffLineData() {
+        mData1 = new TestDataParse();
         TestResponse response = new Gson().fromJson(ConstantTest.TEST, TestResponse.class);
         List<TestData> body = response.getBody();
         mData1.getDatas().addAll(body);
+
+        mData1.parseData();
         setData(mData1);
     }
 
-
+    public void setShowLabels(SparseArray<String> labels) {
+        xAxisLine.setXLabels(labels);
+    }
     private void setData(TestDataParse mData) {
         if (mData.getDatas().size() == 0) {
             lineChart.setNoDataText("暂无数据");
             return;
         }
+        setShowLabels(setXLabels());
         //设置y左右两轴最大最小值
         axisLeft.setAxisMinValue(mData.getMin());
         axisLeft.setAxisMaxValue(mData.getMax());
@@ -143,18 +163,14 @@ public class TestActivity extends Activity {
             if (mData.getDatas().get(i).getTime().equals("13:30")) {
                 continue;
             }
-            lineCJEntries.add(new Entry(mData.getDatas().get(i).get, i));
+            lineCJEntries.add(new Entry((float)mData.getDatas().get(i).getEstnav(), i));
             dateList.add(mData.getDatas().get(i).getTime());
         }
         d1 = new LineDataSet(lineCJEntries, "成交价");
-        d2 = new LineDataSet(lineJJEntries, "均价");
 
         d1.setCircleRadius(0);
-        d2.setCircleRadius(0);
         d1.setColor(Color.BLUE);
-        d2.setColor(Color.RED);
         d1.setHighLightColor(Color.BLACK);
-        d2.setHighlightEnabled(false);
         d1.setDrawFilled(true);
 
         //谁为基准
@@ -162,10 +178,16 @@ public class TestActivity extends Activity {
         // d2.setAxisDependency(YAxis.AxisDependency.RIGHT);
         ArrayList<ILineDataSet> sets = new ArrayList<ILineDataSet>();
         sets.add(d1);
-        sets.add(d2);
-        LineData cd = new LineData(dateList, sets);
+        LineData cd = new LineData(getMinutesCount(), sets);
+
+
+
         lineChart.setData(cd);
 
         lineChart.invalidate();//刷新图
+    }
+
+    public String[] getMinutesCount() {
+        return new String[741];
     }
 }
