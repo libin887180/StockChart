@@ -8,7 +8,6 @@ import android.util.SparseArray;
 
 import com.example.yanjiang.stockchart.api.ConstantTest;
 import com.example.yanjiang.stockchart.bean.DataParse;
-import com.example.yanjiang.stockchart.mychart.MyLineChart;
 import com.example.yanjiang.stockchart.mychart.MyXAxis;
 import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.LimitLine;
@@ -35,7 +34,7 @@ import butterknife.ButterKnife;
 public class TestActivity extends Activity {
 
     @Bind(R.id.line_chart)
-    MyLineChart lineChart;
+    LibinLineChart lineChart;
 //    private XAxis xAxis;
     private YAxis axisLeft;
     private YAxis axisRight;
@@ -55,6 +54,7 @@ public class TestActivity extends Activity {
     }
 
     private void initChart() {
+
         lineChart.setScaleEnabled(false);
         lineChart.setDrawBorders(true);
         lineChart.setBorderWidth(1);
@@ -137,6 +137,7 @@ public class TestActivity extends Activity {
             lineChart.setNoDataText("暂无数据");
             return;
         }
+
         setShowLabels(setXLabels());
         //设置y左右两轴最大最小值
         axisLeft.setAxisMinValue(mData.getMin());
@@ -179,7 +180,7 @@ public class TestActivity extends Activity {
         ArrayList<ILineDataSet> sets = new ArrayList<ILineDataSet>();
         sets.add(d1);
         LineData cd = new LineData(getMinutesCount(), sets);
-
+        setMarkerView(dateList);
 
 
         lineChart.setData(cd);
@@ -189,5 +190,10 @@ public class TestActivity extends Activity {
 
     public String[] getMinutesCount() {
         return new String[741];
+    }
+
+    private void setMarkerView(  ArrayList<String> dateList ){
+        MyMarkerView myMarkerView = new MyMarkerView(TestActivity.this, R.layout.mymarkerview,dateList);
+        lineChart.setMarkerView(myMarkerView);
     }
 }
